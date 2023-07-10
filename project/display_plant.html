@@ -1,0 +1,276 @@
+<!--
+    filename: display_plant.html
+    author: Vincent Pennetti (vpennett@bu.edu)
+    description: an html document displaying an individual plant
+-->
+
+{% extends 'project/base.html' %}
+
+{% block content %}
+
+<!--CSS-->
+<style>
+    .name_head{
+        display:inline;
+        
+    }
+
+    #container{
+        background-color: white;
+        width: 80vw;
+        overflow: auto;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 10px;
+    }
+
+    #plant_name {
+        clear: both;
+        margin-left: auto;
+        margin-right: auto;
+
+    }
+
+    #main_image{
+        clear: both;
+        width: auto;
+        float: left;
+        padding-right: 2vw;
+    }
+
+    #info {
+        width: auto;
+
+    }
+    #mother_children {
+        clear: both;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 18vw 18vw 18vw 18vw;
+        grid-gap: 1vw;
+        color: #D4D4D4;
+    }
+    .grid-item {
+        background-color: #D4D4D4;
+        color: black;
+        border-radius: 5px;
+        padding: 1vw;
+        font-size: 2vw;
+        width: 15vw;
+        height: 15vw;
+    }
+    
+    .dispimg{
+        width: 10vw;
+        height: 10vw;
+        object-fit: cover;
+    }
+    
+</style>
+<!--End CSS-->
+
+
+<!--Navigation links-->
+<a href="{% url 'logbook' plant.pk %}">Logbook</a> |
+<a href="{% url 'update_plant' plant.pk %}">Edit this Plant</a> |
+
+
+<hr>
+
+<!--Container for displaying the plant's information-->
+<div id="container">
+    <div style='background-color: red'>    
+        {% if not plant.is_alive %}
+        <h1><center>DECEASED</center></h1>
+        {% endif %}
+    </div>
+    <div id="plant_name"><h1 class="name_head">{{plant.monicker}}</h1> <small class="name_head">({{plant.name}})</small>    </div>
+    
+    <!--Display the main image-->
+    <div id="main_image">
+    <table>
+
+        <!--Determine what type of image the main image is and then display it appropriately-->
+        <tr>
+            {% if plant.get_main_image_pk %}
+                <td><a href="{% url 'single_image' plant_pk=plant.pk image_pk=plant.get_main_image_pk %}"><img src='{{plant.get_main_image}}' style='width: 300'></a></td>
+            {% else %}
+                <td><img src='{{plant.get_main_image}}' style='width: 300'></a></td>
+            {% endif %}
+        </tr>
+
+        <!--Link to view the image gallery-->
+        <tr>
+            <td><small><a href="{% url 'gallery' plant.pk %}">View Images</a></small></td>
+        </tr>
+        <tr><td><br></td></tr>
+
+    </table>
+    </div>
+
+
+    <!-- info table/display all of the relevant plant model information-->
+    <div id="info">
+    <table>
+        <tr>
+            <td>Name: </td>
+            <td>{{plant.name}}</td>
+        </tr>
+        <tr>
+            <td>Species: </td>
+            <td>{{plant.genus}} {{plant.species}}</td>
+        </tr>
+        <tr>
+            <td>Mother: </td>
+
+            <!--If the mother exists in the database, link to her. Otherwise do nothing-->
+            <td>
+                {% if plant.mother_name %}
+                    <a href="{% url 'display_plant' plant.get_mother.pk %}">{{plant.mother_name}}</a>
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Father: </td>
+            <td>
+                <!--If the father exists in the database, link to her. Otherwise do nothing-->
+                {% if plant.father_name %}
+                    <a href="{% url 'display_plant' plant.get_father.pk %}">{{plant.father_name}}</a>
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Date Bred: </td>
+            <td>
+                <!--If there is a valid date, display it. Otherwise do nothing-->
+                {% if plant.date_bred %}
+                    {{plant.date_bred}}
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Date Harvested: </td>
+            <td>
+                <!--If there is a valid date, display it. Otherwise do nothing-->
+                {% if plant.date_harvested %}
+                    {{plant.date_harvested}}
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Date Planted: </td>
+            <td>
+                <!--If there is a valid date, display it. Otherwise do nothing-->
+                {% if plant.date_planted %}
+                    {{plant.date_planted}}
+                {% else %}
+                {% endif %}        
+            </td>
+        </tr>
+        <tr>
+            <td>Current Location: </td>
+            <td>
+                <!--If there is a valid location, display it. Otherwise do nothing-->
+                {% if plant.current_location %}
+                    {{plant.current_location}}
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td><b>Relevant Flower Characteristics: </b></td>
+            <td>
+                <!--If there is a valid location, display it. Otherwise do nothing-->
+                {% if plant.pheno_flower_red %}
+                    Red Flower,
+                {% elif plant.pheno_flower_white%}
+                    White Flower,
+                {% elif plant.pheno_flower_pink%}
+                    Pink Flower,
+                {% elif plant.pheno_flower_blush%}
+                    blush Flower,
+                {% else %}
+                {% endif %}
+
+                {% if plant.pheno_flower_morphology %}
+                    Generic Morphology 
+
+                {% else %}
+                    Abnormal Morphology
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <br>
+
+
+    <!--Display the children that this plant is the mother to-->
+    <div id="mother_children">
+    <h3>{{plant.name}} is the mother to: </h3>
+
+    <div class="grid-container">
+
+        <!--If there are maternal children, iteratevly display them as interactable tiles-->
+            {% if plant.get_children_maternal %}
+                {% for child in plant.get_children_maternal %}
+                    {% if child.is_alive %}
+                        <div class="grid-item">
+                            <center><a href="{% url 'display_plant' child.pk %}"><img src='{{child.get_main_image}}' style='width: 12vw; height: 12vw' class='dispimg'></a></center>
+                            <center>{{child.name}}</center>
+                        </div>
+                    {% else %}
+                        <div class="grid-item" style='background-color: #343434;'>
+                            <center><a href="{% url 'display_plant' child.pk %}"><img src='{{child.get_main_image}}' style='width: 12vw; height: 12vw' class='dispimg'></a></center>
+                            <center>{{child.name}}</center>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+        <!--Otherwise, state that this plant is not a mother and move on.-->
+            {% else %}
+                {{plant.name}} is not a mother.
+            {% endif %}
+            </div>
+    </div>
+
+
+    <div id="father_children">
+        <h3>{{plant.name}} is the father to: </h3>
+
+        <div class="grid-container">
+            
+            <!--If there are paternal children, iteratevly display them as interactable tiles-->
+            {% if plant.get_children_paternal %}
+                {% for child in plant.get_children_paternal %}
+                    {% if child.is_alive %}
+                        <div class="grid-item">
+                            <center><a href="{% url 'display_plant' child.pk %}"><img src='{{child.get_main_image}}' style='width: 12vw; height: 12vw' class='dispimg'></a></center>
+                            <center>{{child.name}}</center>
+                        </div>
+                    {% else %}
+                        <div class="grid-item" style='background-color: #343434;'>
+                            <center><a href="{% url 'display_plant' child.pk %}"><img src='{{child.get_main_image}}' style='width: 12vw; height: 12vw' class='dispimg'></a></center>
+                            <center>{{child.name}}</center>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            <!--Otherwise, state that this plant is not a father and move on.-->
+            {% else %}
+                {{plant.name}} is not a father.
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<br>
+
+
+{% endblock %}
