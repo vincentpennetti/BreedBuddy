@@ -1,0 +1,48 @@
+<!--
+    filename: delete_image_form.html
+    author: Vincent Pennetti (vpennett@bu.edu)
+    description: an html document for deleting a plant image
+-->
+{% extends 'project/base.html' %}
+
+{% block content %}
+
+<!--Display all of the appropriate additional navigation buttons-->
+<a href="{% url 'display_plant' img.plant.pk %}">{{img.plant.name}}</a> >
+<a href="{% url 'gallery' img.plant.pk %}">{{img.plant.name}} Gallery</a> >
+<a href="{% url 'single_image' plant_pk=img.plant.pk image_pk=img.pk %}">Return to Image</a> 
+
+<hr>
+
+<h3>Are you sure you want to delete this image?</h3>
+
+<!--Display the image that the user is considering deleting-->
+{% if image.image_file %}
+<img src="{{img.image_file.url}}" style='width: 30vw ; height: auto; max-width: 30%'>
+{% else %}
+<img src="{{img.image_url}}" style='width: 30vw ; height: auto; max-width: 30%'>
+{% endif %}
+
+<p>
+
+
+</p>
+
+
+<!--Form for if the user wants to delete the image-->
+<form method ='POST'>
+    {% csrf_token %}
+    <input type='submit' name="yes" value="yes">
+</form>
+
+
+<!--Form for if the user decides against deleting the image-->
+<form method='GET' action="{% url 'single_image' plant_pk=img.plant.pk image_pk=img.pk %}">
+    {% csrf_token %}
+    <input type='submit' name="no" value="no">
+</form>
+
+
+
+
+{% endblock %}
